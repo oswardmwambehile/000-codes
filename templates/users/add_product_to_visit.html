@@ -1,0 +1,32 @@
+
+
+
+
+
+      <h3><i class="fas fa-box-open"></i> Add Product to Visit: {{ visit }}</h3>
+
+      <form method="post">
+        {% csrf_token %}
+        <div id="formset-container">
+          {{ formset.management_form }}
+          {% for form in formset %}
+            <div class="mb-3 border p-3 rounded">
+              <label class="form-label"><i class="fas fa-tag"></i> {{ form.product_interested.label }}</label>
+              {{ form.product_interested }}  <!-- just render the field, class is already in widget -->
+
+              {% if form.DELETE %}
+                <div class="form-check mt-2">
+                  {{ form.DELETE }}
+                  <label class="form-check-label text-danger"><i class="fas fa-trash-alt"></i> Delete</label>
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-success">
+          <i class="fas fa-plus-circle"></i> Add Products
+        </button>
+      </form>
+
+    

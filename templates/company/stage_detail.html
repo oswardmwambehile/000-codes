@@ -1,0 +1,106 @@
+{% extends "company/base.html" %}
+{% load static %}
+
+{% block content %}
+  {% include "company/sidebar.html" %}
+  <div class="main-panel">
+    <div class="main-header">
+      {% include "company/nav.html" %}
+    </div>
+
+    <div class="container">
+      <div class="page-inner">
+        <h3>Visit Stage Details</h3>
+
+        {% if stage_update.company_name %}
+          <p><i class="fas fa-building"></i> <strong>Company Name:</strong> {{ stage_update.company_name }}</p>
+        {% endif %}
+
+        {% if stage_update.contact_person_name %}
+          <p><i class="fas fa-user"></i> <strong>Contact Person:</strong> {{ stage_update.contact_person_name }}</p>
+        {% endif %}
+
+        {% if stage_update.contact_number %}
+          <p><i class="fas fa-phone"></i> <strong>Contact Number:</strong> {{ stage_update.contact_number }}</p>
+        {% endif %}
+
+        {% if stage_update.designation %}
+          <p><i class="fas fa-id-badge"></i> <strong>Designation:</strong> {{ stage_update.designation }}</p>
+        {% endif %}
+
+        {% if stage_update.tag %}
+          <p><i class="fas fa-tags"></i> <strong>Tag:</strong>
+            <span class="badge bg-warning text-dark">{{ stage_update.tag }}</span>
+          </p>
+        {% endif %}
+
+        {% if stage_update.meeting_stage %}
+          <p><i class="fas fa-tasks"></i> <strong>Stage:</strong>
+            <span class="badge bg-info text-white">{{ stage_update.meeting_stage }}</span>
+          </p>
+        {% endif %}
+
+        {% if stage_update.status %}
+          <p><i class="fas fa-info-circle"></i> <strong>Status:</strong>
+            <span class="badge bg-success text-white">{{ stage_update.status }}</span>
+          </p>
+        {% endif %}
+
+        {% if stage_update.item_discussed %}
+          <p><i class="fas fa-comments"></i> <strong>Items Discussed:</strong> {{ stage_update.item_discussed }}</p>
+        {% endif %}
+
+        {% if stage_update.client_budget %}
+          <p><i class="fas fa-wallet"></i> <strong>Client Budget:</strong> {{ stage_update.client_budget }}</p>
+        {% endif %}
+
+        {% if stage_update.is_order_final %}
+          <p><i class="fas fa-check-circle"></i> <strong>Order Finalized:</strong>
+            <span class="badge bg-success text-white">Yes</span>
+          </p>
+        {% endif %}
+
+        {% if stage_update.contract_outcome %}
+          <p><i class="fas fa-file-contract"></i> <strong>Contract Outcome:</strong> {{ stage_update.contract_outcome }}</p>
+        {% endif %}
+
+        {% if stage_update.contract_amount %}
+          <p><i class="fas fa-coins"></i> <strong>Contract Amount:</strong> {{ stage_update.contract_amount }}</p>
+        {% endif %}
+
+        {% if stage_update.is_payment_collected %}
+          <p><i class="fas fa-money-bill-wave"></i> <strong>Payment Collected:</strong> {{ stage_update.is_payment_collected }}</p>
+        {% endif %}
+
+        {% if stage_update.reason_lost %}
+          <p><i class="fas fa-ban"></i> <strong>Reason Lost:</strong> {{ stage_update.reason_lost }}</p>
+        {% endif %}
+
+        <p><i class="fas fa-calendar-plus"></i> <strong>Created At:</strong> {{ stage_update.updated_at }}</p>
+        <p><i class="fas fa-calendar-check"></i> <strong>Last Updated:</strong> {{ stage_update.updated_at }}</p>
+
+        <!-- Products snapshot -->
+        {% if stage_update.products_snapshot %}
+          <h5><i class="fas fa-box-open"></i> Products Interested:</h5>
+          <ul>
+            {% for product in stage_update.products_snapshot %}
+              <li>
+                {{ product.product_interested }}
+                {% if product.order_estimate %} | Estimate: {{ product.order_estimate }}{% endif %}
+                {% if product.final_order_amount %} | Final Amount: {{ product.final_order_amount }}{% endif %}
+                {% if product.total_collected %} | Payment Collected: {{ product.total_collected }}{% endif %}
+                {% if product.remaining_balance %} | Balance: {{ product.remaining_balance }}{% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        <a href="{% url 'visit_history' stage_update.visit.id %}" class="btn btn-primary mt-3">
+          <i class="fas fa-arrow-left"></i> Back to Visit History
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+{% endblock %}

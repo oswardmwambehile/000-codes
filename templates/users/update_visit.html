@@ -1,0 +1,991 @@
+{% extends "users/base.html" %}
+{% load static %}
+
+{% block content %}
+{% include "users/sidebar.html" %}
+<div class="main-panel">
+    <div class="main-header">
+      <div class="main-header-logo">
+        <div class="logo-header" data-background-color="dark">
+          <a href="index.html" class="logo">
+            <img src="{% static 'assets/img/kaiadmin/logo_light.svg' %}" alt="navbar brand" class="navbar-brand" height="20" />
+          </a>
+          <div class="nav-toggle">
+            <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
+            <button class="btn btn-toggle sidenav-toggler"><i class="gg-menu-left"></i></button>
+          </div>
+          <button class="topbar-toggler more"><i class="gg-more-vertical-alt"></i></button>
+        </div>
+      </div>
+      {% include "users/nav.html" %}
+    </div>
+
+    <div class="container">
+      <div class="page-inner">
+        <div class="row">
+          <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h2 class="mb-0">Add Follow-up</h2>
+              <a href="{% url 'add_visit' %}" class="btn btn-outline-dark">
+                <i class="bi bi-house-door-fill"></i> Home
+              </a>
+            </div>
+
+            <form method="post" class="needs-validation" novalidate enctype="multipart/form-data">
+              {% csrf_token %}
+
+              <!-- Visit Info -->
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Company</label>
+                  {{ form.company_name }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Contact Person <span style="color: red;">*</span></label>
+                  {{ form.contact_person }}
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Contact Number</label>
+                  {{ form.contact_number }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Designation</label>
+                  {{ form.designation }}
+                </div>
+              </div>
+
+              <!-- Item Discussed + Meeting Type + Image -->
+              <div class="mb-3">
+                <label class="form-label">Item Discussed <span style="color: red;">*</span></label>
+                {{ form.item_discussed }}
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Meeting Type <span style="color: red;">*</span></label>
+                {{ form.meeting_type }}
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Visit Image</label>
+                {% if visit.visit_image %}
+                  <div class="mb-2">
+                    <a href="{{ visit.visit_image.url }}" target="_blank">View previous image</a>
+                  </div>
+                {% endif %}
+                {{ form.visit_image }}
+              </div>
+
+              <!-- Location -->
+              <div class="mb-3">
+                <label class="form-label">Location</label>
+                <div id="map" style="height:300px; border:1px solid #ccc;"></div>
+                <small id="location-details" class="form-text text-muted">📍 Lat / Lon</small>
+                {{ form.latitude }}
+                {{ form.longitude }}
+              </div>
+
+              <!-- Stage + Outcome -->
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label class="form-label">Meeting Stage <span style="color: red;">*</span></label>
+                  {{ form.meeting_stage }}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="form-label">Client Budget <span style="color: red;">*</span></label>
+                  {{ form.client_budget }}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="form-label">Contract Outcome <span style="color: red;">*</span></label>
+                  {{ form.contract_outcome }}
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Contract Amount <span style="color: red;">*</span></label>
+                  {{ form.contract_amount }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Reason Lost <span style="color: red;">*</span></label>
+                  {{ form.reason_lost }}
+                </div>
+              </div>
+
+              <!-- Checkboxes -->
+              <div class="row">
+                <div class="col-md-3 mb-3 form-check">
+                  {{ form.is_order_final }} 
+                  <label class="form-check-label ms-2">Is this final order? <span style="color: red;">(check to proceed)</span></label>
+                </div>
+                <div class="col-md-3 mb-3 form-check">
+                  <label class="form-check-label ms-2">Is Payment collected?  <span style="color: red;">* </span></label>
+                  {{ form.is_payment_collected }} 
+                </div>
+              </div>
+
+              <!-- Products Formset -->
+              <h4>Products Interested</h4>
+              <div id="production-line-formset">
+                {{ formset.management_form }}
+                {% for pf in formset %}
+                <div class="production-line-item border rounded p-3 mb-3 position-relative"
+                     id="product-{{ pf.instance.pk }}"
+                     data-previous-payments='{{ pf.previous_payments_json|default:"[]"|safe }}'>
+                  {% if pf.instance.pk %}
+                    <input type="hidden" name="{{ pf.prefix }}-id" value="{{ pf.instance.pk }}">
+                  {% endif %}
+
+                  <div class="mb-3">
+                    <label>Product</label>
+                    {{ pf.product_interested }}
+                  </div>
+
+                  <div class="mb-3">
+                    <label>Order Estimate <span style="color: red;">*</span></label>
+                    {{ pf.order_estimate }}
+                  </div>
+
+                  <div class="mb-3">
+                    <label>Final Order Amount</label>
+                    {{ pf.final_order_amount }}
+                  </div>
+
+                  <div class="mb-3">
+                    <label>Payment Collected <span style="color: red;">*</span></label>
+                    {{ pf.payment_collected }}
+                  </div>
+
+                  <!-- Previous Payments History -->
+                  <div class="mb-3 previous-payments-container">
+                    <label>Previous Payments:</label>
+                    <div class="previous-payments"></div>
+                  </div>
+
+                  {% if pf.instance.pk %}
+                  <div class="mb-3 text-end">
+                    <button type="button" 
+                            class="btn btn-sm btn-danger delete-product-btn" 
+                            data-url="{% url 'delete_product_from_visit' visit.id pf.instance.pk %}" 
+                            data-id="{{ pf.instance.pk }}">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </div>
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+
+              <!-- Buttons -->
+              <div class="d-flex justify-content-start align-items-center mt-3">
+                <button type="submit" class="btn btn-primary me-2">
+                  <i class="bi bi-save-fill"></i> Save Visit
+                </button>
+                <button type="button" class="btn btn-success" id="add-product-btn">
+                  <i class="fas fa-circle-plus"></i> Add Product
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-box-open"></i> Add Another Product</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modal-product-form">
+        <div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Product Modal -->
+<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="fas fa-trash"></i> Confirm Product Deletion</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="fw-bold text-danger">
+          ⚠️ This action cannot be undone.
+        </p>
+      
+        <p>
+          Are you sure you want to delete this product?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button type="button" class="btn btn-danger" id="confirm-delete-btn">
+          <i class="fas fa-trash-alt"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+  const addProductBtn = document.getElementById('add-product-btn');
+  const modalEl = document.getElementById('addProductModal');
+  const modal = new bootstrap.Modal(modalEl);
+  const modalBody = document.getElementById('modal-product-form');
+  const formsetDiv = document.getElementById('production-line-formset');
+
+  // track whether the page is being unloaded because of a genuine form submit
+  let formSubmitting = false;
+
+  // If the page is restored from bfcache (pageshow.persisted), ensure we clear tempProducts
+  // only if they were not intentionally submitted. (This helps when user navigates away and later returns.)
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted && !formSubmitting) {
+      sessionStorage.removeItem("tempProducts");
+    }
+  });
+
+  // When the page is being hidden (navigation away / close / back/forward),
+  // clear temporary products unless a form submit is in progress.
+  window.addEventListener('pagehide', function(event) {
+    if (!formSubmitting) {
+      sessionStorage.removeItem("tempProducts");
+    }
+  });
+
+  // Make product dropdowns readonly but still submit values
+  formsetDiv.querySelectorAll('select[name$="product_interested"]').forEach(select => {
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.name = select.name;
+    hidden.value = select.value;
+    formsetDiv.appendChild(hidden);
+    select.style.pointerEvents = "none";
+    select.style.backgroundColor = "#e9ecef";
+  });
+
+  // Load tempProducts from sessionStorage
+  let tempProducts = JSON.parse(sessionStorage.getItem("tempProducts") || "[]");
+
+  function getFormsetProducts() {
+    const products = [];
+    formsetDiv.querySelectorAll('.production-line-item').forEach(item => {
+      const select = item.querySelector('select[name$="product_interested"]');
+      if (select) {
+        const id = select.value;
+        if (id) products.push(id);
+      }
+    });
+    return products;
+  }
+
+  function renderTempProducts() {
+    let wrapper = document.getElementById("temp-products-wrapper");
+    if (!wrapper) {
+      wrapper = document.createElement("div");
+      wrapper.id = "temp-products-wrapper";
+      formsetDiv.appendChild(wrapper);
+    }
+    wrapper.innerHTML = "";
+
+    tempProducts.forEach((p, index) => {
+      const div = document.createElement("div");
+      div.className = "production-line-item border rounded p-3 mb-3 position-relative";
+      div.id = `temp-product-${index}`;
+      div.innerHTML = `
+        <p><strong>Product:</strong> ${p.name}</p>
+        <button type="button" class="btn btn-sm btn-danger remove-temp" data-index="${index}">
+          <i class="fas fa-trash-alt"></i> 
+        </button>
+      `;
+      wrapper.appendChild(div);
+    });
+
+    wrapper.querySelectorAll(".remove-temp").forEach(btn => {
+      btn.addEventListener("click", function() {
+        const i = this.dataset.index;
+        tempProducts.splice(i, 1);
+        sessionStorage.setItem("tempProducts", JSON.stringify(tempProducts));
+        renderTempProducts();
+      });
+    });
+  }
+
+  renderTempProducts();
+
+  addProductBtn.addEventListener("click", function(e) {
+    e.preventDefault();
+    modal.show();
+    modalBody.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading...</div>';
+
+    fetch("{% url 'add_product_to_visit' visit.id %}", {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.form_html) {
+        modalBody.innerHTML = data.form_html;
+
+        const form = modalBody.querySelector('form');
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const productSelect = form.querySelector('select[name$="product_interested"]');
+          const productId = productSelect.value;
+          const productName = productSelect.options[productSelect.selectedIndex].text;
+          if (!productId) return;
+
+          const existingFormsetProducts = getFormsetProducts();
+          if (tempProducts.some(p => p.id === productId) || existingFormsetProducts.includes(productId)) {
+            const oldError = modalBody.querySelector('.alert-danger');
+            if (oldError) oldError.remove();
+
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger mt-2';
+            errorDiv.innerText = `❌ Product "${productName}" is already added.`;
+            form.prepend(errorDiv);
+            setTimeout(() => errorDiv.remove(), 3000);
+            return;
+          }
+
+          tempProducts.push({ id: productId, name: productName });
+          sessionStorage.setItem("tempProducts", JSON.stringify(tempProducts));
+          renderTempProducts();
+          modal.hide();
+        });
+
+      } else {
+        modalBody.innerHTML = '<div class="text-danger">Failed to load form.</div>';
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      modalBody.innerHTML = '<div class="text-danger">Failed to load form.</div>';
+    });
+  });
+
+  let deleteUrl = null;
+  let deleteId = null;
+  const deleteModal = new bootstrap.Modal(document.getElementById('deleteProductModal'));
+  const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+
+  document.querySelectorAll('.delete-product-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      deleteUrl = this.dataset.url;
+      deleteId = this.dataset.id;
+      deleteModal.show();
+    });
+  });
+
+  confirmDeleteBtn.addEventListener('click', function() {
+    if (deleteUrl && deleteId) {
+      fetch(deleteUrl, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': '{{ csrf_token }}'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById(`product-${deleteId}`).remove();
+          deleteModal.hide();
+        }
+      })
+      .catch(err => console.error(err));
+    }
+  });
+
+  const mainForm = document.querySelector('form.needs-validation');
+  mainForm.addEventListener('submit', function(e) {
+    const form = this;
+
+    // Item Discussed Validation
+    const oldError = document.querySelector('.item-discussed-error');
+    if (oldError) oldError.remove();
+    const itemField = form.querySelector('[name="item_discussed"]');
+    if (!itemField || itemField.value.trim() === "") {
+      e.preventDefault();
+      const errDiv = document.createElement('div');
+      errDiv.className = 'text-danger item-discussed-error mt-2';
+      errDiv.innerText = 'Please enter Item Discussed.';
+      const parent = itemField ? (itemField.closest('.mb-3') || itemField.parentElement) : form;
+      parent.appendChild(errDiv);
+      if (itemField) itemField.focus();
+      return;
+    }
+
+    // Meeting Type Validation
+    const mtField = form.querySelector('[name="meeting_type"]');
+    if (!mtField || mtField.value.trim() === "") {
+      e.preventDefault();
+      const errDiv = document.createElement('div');
+      errDiv.className = 'text-danger meeting-type-error mt-2';
+      errDiv.innerText = 'Please select Meeting Type.';
+      const parent = mtField ? (mtField.closest('.mb-3') || mtField.parentElement) : form;
+      parent.appendChild(errDiv);
+      if (mtField) mtField.focus();
+      return;
+    }
+
+    // If we get here, validation has passed -> mark as submitting so pagehide won't clear storage
+    formSubmitting = true;
+
+    // Append temp products as hidden inputs before submit
+    form.querySelectorAll('.temp-product-hidden').forEach(el => el.remove());
+
+    tempProducts.forEach((p, i) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = `temp_product_${i}`;
+      input.value = p.id;
+      input.classList.add('temp-product-hidden');
+      form.appendChild(input);
+    });
+
+    // Clear tempProducts now that we're submitting
+    sessionStorage.removeItem("tempProducts");
+    // allow form to submit naturally
+  });
+
+  {% if visit %}
+  const _item_discussed_clear = document.querySelector('[name="item_discussed"]');
+  if (_item_discussed_clear) _item_discussed_clear.value = '';
+  {% endif %}
+
+});
+</script>
+
+
+
+
+<!-- Leaflet CSS/JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  function wrapperForField(el){ return el ? (el.closest('.mb-3') || el.parentElement) : null; }
+  function showField(el, show=true){ 
+      if(!el) return; 
+      const wrapper = wrapperForField(el); 
+      if(!wrapper) return; 
+      if(show){ wrapper.classList.remove('d-none'); el.disabled=false; } 
+      else { wrapper.classList.add('d-none'); el.disabled=false; } 
+  }
+
+  const budgetInput = document.querySelector('[name="client_budget"]');
+  const budgetWrapper = budgetInput ? budgetInput.closest(".mb-3") : null;
+  let budgetSpan = budgetWrapper?.querySelector(".client-budget-span");
+
+  if (budgetWrapper && !budgetSpan) {
+      budgetSpan = document.createElement("span");
+      budgetSpan.className = "client-budget-span";
+      budgetSpan.style.color = "red";
+      budgetSpan.textContent = "";
+      budgetWrapper.appendChild(budgetSpan);
+  }
+
+  function toggleBudget(stage){
+      if(!budgetInput || !budgetSpan) return;
+      if(budgetInput.value && budgetInput.value.trim() !== ""){
+          budgetWrapper.classList.remove('d-none');
+          budgetSpan.style.display = "none";
+          if(stage === "Qualifying"){
+              budgetInput.readOnly = false;
+              budgetInput.style.backgroundColor = '';
+          } else {
+              budgetInput.readOnly = true;
+              budgetInput.style.backgroundColor = '#e9ecef';
+          }
+      } else {
+          if(stage === "Qualifying"){ 
+              budgetWrapper.classList.remove('d-none'); 
+              budgetInput.readOnly = false;
+              budgetInput.style.backgroundColor = '';
+              budgetSpan.style.display = "inline";
+          } else {
+              budgetWrapper.classList.add('d-none'); 
+          }
+      }
+  }
+
+  function renderPreviousPayments(row){
+      const finalOrder = row.querySelector('[name$="final_order_amount"]');
+      const paymentCollected = row.querySelector('[name$="payment_collected"]');
+      const stageSelect = document.querySelector('[name="meeting_stage"]');
+
+      let historyContainer = row.querySelector('.previous-payments');
+      if(stageSelect?.value !== "Payment Followup"){
+          if(historyContainer) historyContainer.style.display = "none";
+          return;
+      }
+
+      if(!historyContainer){
+          historyContainer = document.createElement('div');
+          historyContainer.className = 'previous-payments mb-2';
+          historyContainer.style.fontSize = '0.9em';
+          historyContainer.style.color = '#555';
+          if(paymentCollected && paymentCollected.parentNode) paymentCollected.parentNode.after(historyContainer);
+      }
+      historyContainer.style.display = "block";
+
+      let previousPayments = [];
+      try {
+          previousPayments = row.dataset.previousPayments ? JSON.parse(row.dataset.previousPayments) : [];
+      } catch(e){
+          previousPayments = [];
+      }
+
+      historyContainer.innerHTML = '';
+      let totalPrev = 0;
+      previousPayments.forEach(p => {
+          const amount = parseFloat(p.amount) || 0;
+          const div = document.createElement('div');
+          div.textContent = `${p.date} - ${amount.toFixed(2)} collected by ${p.user}`;
+          historyContainer.appendChild(div);
+          totalPrev += amount;
+      });
+
+      const contractAmount = parseFloat(finalOrder?.value) || 0;
+      let remaining = contractAmount - totalPrev;
+
+      let remainingField = row.querySelector('.remaining-balance input');
+      if(!remainingField){
+          let container = row.querySelector('.remaining-balance');
+          if(!container){
+              container = document.createElement('div');
+              container.className = 'mb-3 remaining-balance';
+              container.innerHTML = `<label>Remaining Balance</label><input type="text" class="form-control" readonly>`;
+              if(paymentCollected && paymentCollected.parentNode) paymentCollected.parentNode.after(container);
+          }
+          remainingField = container.querySelector('input');
+      }
+      remainingField.value = remaining.toFixed(2);
+
+      row.style.backgroundColor = remaining === 0 ? '#d4edda' : '';
+  }
+
+  function toggleProductRowFields(row, stage, outcome){
+      const orderEstimate = row.querySelector('[name$="order_estimate"]');
+      const finalOrder = row.querySelector('[name$="final_order_amount"]');
+      const paymentCollected = row.querySelector('[name$="payment_collected"]');
+      const deleteBtn = row.querySelector('.remove-line');
+      const deleteCheckbox = row.querySelector('[name$="-DELETE"]');
+      const deleteLink = row.querySelector('a.btn-danger');
+      const deleteProductBtn = row.querySelector('.delete-product-btn');
+      const prevContainer = row.querySelector('.previous-payments-container');
+
+      if(prevContainer){
+          if(stage === "Payment Followup"){
+              prevContainer.classList.remove('d-none');
+          } else {
+              prevContainer.classList.add('d-none');
+          }
+      }
+
+      showField(orderEstimate,false);
+      showField(finalOrder,false);
+      showField(paymentCollected,false);
+
+      if(deleteBtn) deleteBtn.style.display = 'none';
+      if(deleteCheckbox){
+        try { deleteCheckbox.closest('.mb-3').style.display = 'none'; } catch(e) {}
+      }
+
+      if(deleteProductBtn){
+        if(stage==="Prospecting" || stage==="Qualifying" || stage==="Proposal or Negotiation"){
+          deleteProductBtn.style.display = "inline-block";
+        } else {
+          deleteProductBtn.style.display = "none";
+        }
+      }
+
+      if(deleteLink){
+        if(stage==="Prospecting" || stage==="Qualifying" || stage==="Proposal or Negotiation"){
+          deleteLink.style.display = "inline-block";
+        } else {
+          deleteLink.style.display = "none";
+        }
+      }
+
+      if(stage === "Proposal or Negotiation"){
+          showField(orderEstimate,true);
+          const isOrderFinal = document.querySelector('[name="is_order_final"]');
+          if(isOrderFinal && isOrderFinal.checked){
+            if(orderEstimate){
+              orderEstimate.readOnly = true;
+              orderEstimate.style.backgroundColor = '#e9ecef';
+            }
+            if(finalOrder){
+              showField(finalOrder,false);
+              finalOrder.value = "";
+            }
+          } else {
+            if(orderEstimate){
+              orderEstimate.readOnly = false;
+              orderEstimate.style.backgroundColor = '';
+            }
+            if(finalOrder){
+              showField(finalOrder,false);
+              finalOrder.value = "";
+            }
+          }
+      }
+      else if(stage === "Closing"){
+          if(outcome==="Won"){ 
+            const isOrderFinal = document.querySelector('[name="is_order_final"]');
+            if(isOrderFinal && isOrderFinal.checked){
+              showField(finalOrder,true);
+              if(orderEstimate && finalOrder){
+                finalOrder.value = orderEstimate.value || 0;
+                finalOrder.readOnly = true;
+                finalOrder.style.backgroundColor = '#e9ecef';
+              }
+              if(orderEstimate){
+                orderEstimate.readOnly = true;
+                orderEstimate.style.backgroundColor = '#e9ecef';
+              }
+              row.dataset.closingContractAmount = finalOrder?.value || orderEstimate?.value || 0;
+            } else {
+              showField(finalOrder,false);
+              if(orderEstimate){
+                orderEstimate.readOnly = false;
+                orderEstimate.style.backgroundColor = '';
+              }
+            }
+          }
+          if(outcome==="Lost"){ 
+            showField(finalOrder,false); 
+            showField(paymentCollected,false); 
+          }
+      }
+      else if(stage==="Payment Followup"){ 
+          showField(finalOrder,true); 
+          showField(paymentCollected,true); 
+
+          // Reset payment_collected each time
+          if(paymentCollected){ 
+              paymentCollected.value = "";  
+          }
+
+          // Show contract_outcome but disable editing
+          const contractOutcome = document.querySelector('[name="contract_outcome"]');
+          if(contractOutcome) {
+              showField(contractOutcome, true);
+              contractOutcome.disabled = true; // ✅ disable
+          }
+
+          if(finalOrder){
+              finalOrder.readOnly = true;
+              finalOrder.style.backgroundColor = '#e9ecef';
+              const contractAmount = document.querySelector('[name="contract_amount"]');
+              if(contractAmount){
+                  contractAmount.readOnly = true;
+                  contractAmount.style.backgroundColor = '#e9ecef';
+                  if(!contractAmount.value || contractAmount.value === "0"){
+                      contractAmount.value = row.dataset.closingContractAmount || '';
+                  }
+                  showField(contractAmount, true);
+              }
+              if(!finalOrder.value || finalOrder.value === "0"){
+                  finalOrder.value = row.dataset.closingContractAmount || finalOrder.value || 0;
+              }
+          }
+
+          renderPreviousPayments(row);
+
+          paymentCollected?.addEventListener('input', function(){
+            const value = parseFloat(this.value) || 0;
+            const finalOrder = row.querySelector('[name$="final_order_amount"]');
+            const previousPayments = row.dataset.previousPayments ? JSON.parse(row.dataset.previousPayments) : [];
+            const totalPrev = previousPayments.reduce((acc, p) => acc + (parseFloat(p.amount) || 0), 0);
+            const remainingField = row.querySelector('.remaining-balance input');
+            const contractAmount = parseFloat(finalOrder?.value) || 0;
+            let remaining = Math.max(contractAmount - totalPrev - value, 0);
+            if(remainingField) remainingField.value = remaining.toFixed(2);
+            row.style.backgroundColor = remaining === 0 ? '#d4edda' : '';
+          });
+      } else {
+          const prev = row.querySelector('.previous-payments');
+          if(prev) prev.innerHTML = "";
+      }
+  }
+
+  function applyStageToAllRows(stage,outcome){
+    const formsetDiv = document.getElementById("production-line-formset");
+    const addBtn = document.getElementById("add-product-btn"); 
+    const productsTitle = formsetDiv ? formsetDiv.previousElementSibling : null;
+    if(outcome === "Lost" && stage === "Closing"){
+      if(formsetDiv) formsetDiv.style.display = "none";
+      if(productsTitle) productsTitle.style.display = "none";
+    } else {
+      if(formsetDiv) formsetDiv.style.display = "block";
+      if(productsTitle) productsTitle.style.display = "block";
+    }
+    document.querySelectorAll(".production-line-item").forEach(row=>{ toggleProductRowFields(row,stage,outcome); });
+    if(addBtn){
+      if(stage==="Prospecting" || stage==="Qualifying"){
+        addBtn.style.display = "inline-block";
+      } else {
+        addBtn.style.display = "none";
+      }
+    }
+    toggleBudget(stage);
+    const clientBudget = budgetInput;
+    const contractOutcome = document.querySelector('[name="contract_outcome"]');
+    const contractAmount = document.querySelector('[name="contract_amount"]');
+    const reasonLost = document.querySelector('[name="reason_lost"]');
+    const isOrderFinal = document.querySelector('[name="is_order_final"]');
+    const isPaymentCollectedGlobal = document.querySelector('[name="is_payment_collected"]');
+    const stageSelect = document.querySelector('[name="meeting_stage"]');
+    [contractOutcome, contractAmount, reasonLost, isOrderFinal, isPaymentCollectedGlobal].forEach(el=>{ if(el) showField(el,false); });
+    if(stage==="Proposal or Negotiation"){
+      if(isOrderFinal) showField(isOrderFinal,true);
+      if(stageSelect){
+        Array.from(stageSelect.options).forEach(opt => opt.style.display = "none");
+        const optProposal = stageSelect.querySelector(`option[value="Proposal or Negotiation"]`);
+        if(optProposal) optProposal.style.display = "block";
+        const optQual = stageSelect.querySelector(`option[value="Qualifying"]`);
+        if(optQual) optQual.style.display = "block";
+        const optClosing = stageSelect.querySelector(`option[value="Closing"]`);
+        if(optClosing){
+          if(isOrderFinal && isOrderFinal.checked){
+            optClosing.style.display = "block";
+          } else {
+            optClosing.style.display = "none";
+            if(stageSelect.value === "Closing"){
+              stageSelect.value = "Proposal or Negotiation";
+            }
+          }
+        }
+      }
+    }
+    if(stage==="Closing" && contractOutcome){
+      showField(contractOutcome,true);
+      if(outcome==="Won" && contractAmount) showField(contractAmount,true);
+      if(outcome==="Won" && isPaymentCollectedGlobal) showField(isPaymentCollectedGlobal,true);
+      if(outcome==="Lost" && reasonLost) showField(reasonLost,true);
+      const isOrderFinalNow = document.querySelector('[name="is_order_final"]');
+      if(!isOrderFinalNow || !isOrderFinalNow.checked){
+        if(stageSelect){
+          Array.from(stageSelect.options).forEach(opt => opt.style.display = "none");
+          const optProposal = stageSelect.querySelector(`option[value="Proposal or Negotiation"]`);
+          if(optProposal) optProposal.style.display = "block";
+          const optQual = stageSelect.querySelector(`option[value="Qualifying"]`);
+          if(optQual) optQual.style.display = "block";
+          stageSelect.value = "Proposal or Negotiation";
+        }
+      } else {
+        if(stageSelect){
+          Array.from(stageSelect.options).forEach(opt => opt.style.display = "none");
+          const optClosing = stageSelect.querySelector(`option[value="Closing"]`);
+          if(optClosing) optClosing.style.display = "block";
+          if(outcome === "Won"){
+            const optPayment = stageSelect.querySelector(`option[value="Payment Followup"]`);
+            if(optPayment){
+              if(isPaymentCollectedGlobal && isPaymentCollectedGlobal.value === "Yes-Full"){
+                optPayment.style.display = "none";
+              } else {
+                optPayment.style.display = "block";
+              }
+            }
+          }
+          stageSelect.value = "Closing";
+        }
+        document.querySelectorAll(".production-line-item").forEach(row=>{
+          const finalOrder = row.querySelector('[name$="final_order_amount"]');
+          const orderEstimate = row.querySelector('[name$="order_estimate"]');
+          if(finalOrder && orderEstimate){
+            finalOrder.value = orderEstimate.value || 0;
+            finalOrder.readOnly = true;
+            finalOrder.style.backgroundColor = '#e9ecef';
+          }
+          if(orderEstimate){
+            orderEstimate.readOnly = true;
+            orderEstimate.style.backgroundColor = '#e9ecef';
+          }
+        });
+      }
+    }
+    if(stage==="Payment Followup" && isPaymentCollectedGlobal){
+      showField(isPaymentCollectedGlobal,false);
+      document.querySelectorAll(".production-line-item").forEach(row=>{ toggleProductRowFields(row,stage,outcome); });
+      if(stageSelect){
+        Array.from(stageSelect.options).forEach(opt => opt.style.display = "none");
+        const optPayment = stageSelect.querySelector(`option[value="Payment Followup"]`);
+        if(optPayment) optPayment.style.display = "block";
+        stageSelect.value = "Payment Followup";
+      }
+    }
+    if(stageSelect && stage !== "Proposal or Negotiation" && stage !== "Closing"){
+      Array.from(stageSelect.options).forEach(opt => opt.style.display = "none");
+      if(stage === "Prospecting"){
+        ["Prospecting","Qualifying"].forEach(v=>{ const o=stageSelect.querySelector(`option[value="${v}"]`); if(o) o.style.display="block"; });
+      }
+      else if(stage === "Qualifying"){
+        ["Qualifying","Proposal or Negotiation"].forEach(v=>{ const o=stageSelect.querySelector(`option[value="${v}"]`); if(o) o.style.display="block"; });
+      }
+      else {
+        const current = stageSelect.querySelector(`option[value="${stage}"]`);
+        if(current) current.style.display = "block";
+      }
+    }
+  }
+
+  const stageSelect = document.querySelector('[name="meeting_stage"]');
+  const outcomeSelect = document.querySelector('[name="contract_outcome"]');
+  const saveButton = document.querySelector('button[type="submit"]');
+  const isPaymentCollectedGlobal = document.querySelector('[name="is_payment_collected"]');
+  const isOrderFinal = document.querySelector('[name="is_order_final"]');
+
+  function refreshStageOutcome(){ applyStageToAllRows(stageSelect?.value,outcomeSelect?.value); }
+  stageSelect?.addEventListener('change',refreshStageOutcome);
+  outcomeSelect?.addEventListener('change',refreshStageOutcome);
+  isPaymentCollectedGlobal?.addEventListener('change',refreshStageOutcome);
+  if(isOrderFinal){
+    isOrderFinal.addEventListener('change', function(){ refreshStageOutcome(); });
+  }
+  refreshStageOutcome();
+  saveButton?.addEventListener('click', function(e){
+    const stage = stageSelect?.value;
+    const isOrderFinalCheckbox = document.querySelector('[name="is_order_final"]');
+    if(stage === "Proposal or Negotiation"){
+      if(isOrderFinalCheckbox && !isOrderFinalCheckbox.checked){
+        refreshStageOutcome();
+      }
+    }
+  });
+
+  const latInput = document.getElementById("id_latitude");
+  const lonInput = document.getElementById("id_longitude");
+  const locationDetails = document.getElementById("location-details");
+  let map, marker;
+  function initMapAt(lat,lon,zoom=15){
+    if(!map){ map = L.map('map').setView([lat,lon],zoom); L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:'&copy; OpenStreetMap contributors'}).addTo(map); map.on('click',e=>setMarker(e.latlng.lat,e.latlng.lng)); }
+    else map.setView([lat,lon],zoom);
+    setMarker(lat,lon);
+  }
+  function setMarker(lat,lon){
+    if(marker) marker.setLatLng([lat,lon]);
+    else{ marker=L.marker([lat,lon],{draggable:true}).addTo(map); marker.on('dragend',e=>{ const pos=e.target.getLatLng(); updateLatLonInputs(pos.lat,pos.lng); }); }
+    updateLatLonInputs(lat,lon);
+  }
+  function updateLatLonInputs(lat,lon){ if(latInput) latInput.value=lat.toFixed(6); if(lonInput) lonInput.value=lon.toFixed(6); if(locationDetails) locationDetails.textContent=`📍 Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)}`; }
+  if(latInput && latInput.value && lonInput && lonInput.value){ initMapAt(parseFloat(latInput.value),parseFloat(lonInput.value)); } 
+  else if(navigator.geolocation){ navigator.geolocation.getCurrentPosition(pos=>initMapAt(pos.coords.latitude,pos.coords.longitude), ()=>{ locationDetails.textContent="❌ Unable to retrieve location"; initMapAt(0,0,2); }); } 
+  else { initMapAt(0,0,2); }
+
+  const companySelect = document.getElementById("id_company_name");
+  const contactSelect = document.getElementById("id_contact_person");
+  const contactNumber = document.getElementById("id_contact_number");
+  const designation = document.getElementById("id_designation");
+
+  if(companySelect){
+    if(companySelect.tagName.toLowerCase() === "select"){
+        companySelect.setAttribute("readonly", true);  
+        companySelect.style.pointerEvents = "none";    
+    } else {
+        companySelect.readOnly = true; 
+    }
+  }
+
+  contactSelect?.addEventListener('change', function(){
+      const contactId = this.value;
+      if(contactId){ 
+          fetch(`/get-contact-details-update/${contactId}/`)  
+              .then(res => res.json())
+              .then(data => {
+                  contactNumber.value = data.contact_number || '';
+                  designation.value = data.designation || '';
+              })
+              .catch(err => {
+                  contactNumber.value = '';
+                  designation.value = '';
+              });
+      } else { 
+          contactNumber.value = '';
+          designation.value = '';
+      }
+  });
+
+});
+</script>
+
+
+
+
+
+
+
+
+<!-- === STYLES === -->
+<!-- === STYLES === -->
+<style>
+  /* Hide the delete checkbox entirely for all products */
+.production-line-item [name$="-DELETE"],
+.production-line-item [name$="-DELETE"] + label {
+    display: none !important;
+}
+  body, .main-panel, .container, .page-inner, form {
+    background: none !important;
+    box-shadow: none !important;
+  }
+  h1, h2, h5 { font-weight: 600; color: #222; }
+  label { font-weight: 500; color: #333; margin-bottom: 4px; display: block; }
+  input[type="text"], input[type="number"], input[type="email"], select, textarea {
+    width: 100%; background: transparent; border: 2px solid #ccc; border-radius: 6px; padding: 10px 12px; font-size: 14px; color: #222; transition: border-color 0.2s ease;
+  }
+  input:focus, select:focus, textarea:focus { border-color: #007bff; outline: none; }
+  button, .btn { font-weight: 500; border-radius: 6px; padding: 8px 16px; }
+  .btn-outline-primary { border: 2px solid #007bff; background: transparent; color: #007bff; }
+  .btn-outline-primary:hover { background: #007bff; color: #fff; }
+  .btn-danger, .btn-success { font-weight: 600; }
+  #map { height: 220px !important; width: 100%; border: 2px solid #aaa; border-radius: 6px; margin-bottom: 10px; }
+  .production-line-item { background: none !important; border: 2px solid #ccc; border-radius: 6px; }
+  #location-details { background: none; border: 2px dashed #999; font-size: 13px; color: #555; }
+  .text-danger { font-size: 13px; }
+  .badge { font-size: 12px; border-radius: 4px; }
+
+  @media (max-width: 767.98px) {
+    input[type="text"], input[type="number"], input[type="email"], select, textarea { width: 100% !important; }
+    .row > [class*="col-"] { flex: 0 0 100%; max-width: 100%; margin-bottom: 15px; }
+    .btn { 
+      width: auto !important; 
+      /* ⬇️ removed display:inline-block !important */
+      padding: 6px 14px; 
+      font-size: 14px; 
+      margin-bottom: 6px; 
+    }
+    .btn-primary { background: transparent !important; color: #007bff !important; border: 2px solid #007bff !important; }
+    .btn-primary:hover { background: #007bff !important; color: #fff !important; }
+    .btn-danger { background: transparent !important; color: #dc3545 !important; border: 2px solid #dc3545 !important; }
+    .btn-danger:hover { background: #dc3545 !important; color: #fff !important; }
+  }
+
+  .form-label { font-weight:600; }
+  .production-line-item { position: relative; }
+  .remove-line { z-index: 5; }
+</style>
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "company/base.html" %}
+{% load static %}
+
+{% block content %}
+  {% include "company/sidebar.html" %}
+
+  <div class="main-panel">
+    <div class="main-header">
+      <div class="main-header-logo">
+        <div class="logo-header" data-background-color="dark">
+          <a href="index.html" class="logo">
+            <img src="{% static 'assets/img/kaiadmin/logo_light.svg' %}" alt="navbar brand" class="navbar-brand" height="20" />
+          </a>
+          <div class="nav-toggle">
+            <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
+            <button class="btn btn-toggle sidenav-toggler"><i class="gg-menu-left"></i></button>
+          </div>
+          <button class="topbar-toggler more"><i class="gg-more-vertical-alt"></i></button>
+        </div>
+      </div>
+      {% include "company/nav.html" %}
+    </div>
+
+    <div class="container">
+      <div class="page-inner">
+
+        <!-- Delete Confirmation Card -->
+        <div class="row justify-content-center mt-5">
+          <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+              <div class="card-header bg-danger text-white d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <h4 class="mb-0">Confirm Delete</h4>
+              </div>
+              <div class="card-body">
+                <p class="lead">
+                  Are you sure you want to delete 
+                  <strong>{{ product.product_interested }}</strong> 
+                  from visit <strong>{{ visit }}</strong>?
+                </p>
+                <p class="text-muted small">
+                  This action cannot be undone.
+                </p>
+
+                <div class="d-flex justify-content-start mt-4 gap-2 flex-wrap">
+                  <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-lg shadow-sm">
+                      <i class="fas fa-trash-alt me-1"></i> Yes, Delete
+                    </button>
+                  </form>
+                  <a href="{% url 'update_visit' visit.id %}" class="btn btn-secondary btn-lg shadow-sm">
+                    <i class="fas fa-times me-1"></i> Cancel
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- End Delete Card -->
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Optional: Subtle animation and responsive adjustments -->
+  <style>
+    .card {
+      transform: translateY(-20px);
+      opacity: 0;
+      transition: all 0.5s ease-in-out;
+    }
+    .card.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .btn-danger:hover,
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      transition: 0.2s;
+    }
+
+    @media (max-width: 576px) {
+      .btn-lg {
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.card').forEach(c => c.classList.add('show'));
+    });
+  </script>
+
+{% endblock %}

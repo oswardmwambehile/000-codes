@@ -1,0 +1,148 @@
+{% extends "users/base.html" %}
+{% load static %}
+
+{% block content %}
+  {% include "users/sidebar.html" %}
+  <div class="main-panel">
+    <div class="main-header">
+      <div class="main-header-logo">
+        <div class="logo-header" data-background-color="dark">
+          <a href="index.html" class="logo">
+            <img src="{% static 'assets/img/kaiadmin/logo_light.svg' %}" alt="navbar brand" class="navbar-brand" height="20" />
+          </a>
+          <div class="nav-toggle">
+            <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
+            <button class="btn btn-toggle sidenav-toggler"><i class="gg-menu-left"></i></button>
+          </div>
+          <button class="topbar-toggler more"><i class="gg-more-vertical-alt"></i></button>
+        </div>
+      </div>
+      {% include "users/nav.html" %}
+    </div>
+
+    <div class="container">
+      <div class="page-inner">
+
+        <!-- ✅ Home Link -->
+        <div class="mb-3">
+          <a href="{% url 'customer_list' %}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-home"></i> Home
+          </a>
+        </div>
+
+        <h3 class="mb-4"><i class="fas fa-user-edit"></i> Edit Customer</h3>
+
+        <form method="post">
+          {% csrf_token %}
+
+          <!-- Customer Form -->
+          <div class="mb-4">
+            <h5><i class="fas fa-id-card"></i> Customer Details</h5>
+            <table class="table table-bordered">
+              <tbody>
+                <tr>
+                  <th><i class="fas fa-briefcase"></i> Designation</th>
+                  <td>{{ customer_form.designation }}</td>
+                </tr>
+                <tr>
+                  <th><i class="fas fa-building"></i> Company Name</th>
+                  <td>{{ customer_form.company_name }}</td>
+                </tr>
+                <tr>
+                  <th><i class="fas fa-map-marker-alt"></i> Location</th>
+                  <td>{{ customer_form.location }}</td>
+                </tr>
+                <tr>
+                  <th><i class="fas fa-envelope"></i> Email</th>
+                  <td>{{ customer_form.email }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Contact Formset -->
+          <div class="mb-4">
+            <h5><i class="fas fa-address-book"></i> Contact Details</h5>
+            {{ formset.management_form }}
+
+            <table class="table table-bordered" id="contact-table">
+              <thead>
+                <tr>
+                  <th style="width:40%;"><i class="fas fa-user"></i> Contact Name</th>
+                  <th style="width:40%;"><i class="fas fa-phone"></i> Contact Detail</th>
+                  <th style="width:20%;"><i class="fas fa-cogs"></i> Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for form in formset %}
+                  <tr>
+                    <td>{{ form.contact_name }}</td>
+                    <td>{{ form.contact_detail }}</td>
+                    <td>
+                      <button type="button" class="btn btn-danger btn-sm remove-row">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+
+            <div class="d-flex gap-2 flex-wrap mt-2">
+              <button type="button" id="add-contact" class="btn btn-success btn-sm">
+                <i class="fas fa-plus"></i> Add Contact
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Update Customer
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+ 
+
+  <style>
+    input, select, textarea { border: 1px solid #ccc; border-radius: 4px; padding: 6px 8px; }
+    @media (max-width: 768px) {
+      input, select, textarea { width: 100% !important; }
+      .table th, .table td { display: block; width: 100% !important; }
+      .table tr { display: block; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+      .table th { font-weight: bold; margin-bottom: 5px; }
+      #contact-table thead { display: none; }
+    }
+    .d-flex.gap-2.flex-wrap .btn { flex: 0 0 auto; }
+  </style>
+  <!-- ✅ Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const addBtn = document.getElementById("add-contact");
+      const tableBody = document.querySelector("#contact-table tbody");
+      const totalForms = document.getElementById("id_form-TOTAL_FORMS");
+
+      addBtn.addEventListener("click", function () {
+        const formCount = parseInt(totalForms.value);
+        const newRow = tableBody.rows[0].cloneNode(true);
+
+        newRow.querySelectorAll("input").forEach(input => {
+          input.name = input.name.replace(/-\d+-/, `-${formCount}-`);
+          input.id = input.id.replace(/-\d+-/, `-${formCount}-`);
+          if (input.type === "text") input.value = "";
+        });
+
+        tableBody.appendChild(newRow);
+        totalForms.value = formCount + 1;
+      });
+
+      document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("remove-row")) {
+          const row = e.target.closest("tr");
+          if (tableBody.rows.length > 1) row.remove();
+        }
+      });
+    });
+  </script>
+{% endblock %}

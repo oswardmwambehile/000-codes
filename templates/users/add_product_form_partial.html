@@ -1,0 +1,11 @@
+<form method="post" action="{% url 'add_product_to_visit' visit.id %}">
+  {% csrf_token %}
+  {{ formset.management_form }}
+  {% for pf in formset %}
+    <div class="mb-3">
+      <label>{{ pf.product_interested.label }}</label>
+      {{ pf.product_interested }}   <!-- Django renders dropdown with choices -->
+    </div>
+  {% endfor %}
+  <button type="submit" class="btn btn-success">Save Product</button>
+</form>

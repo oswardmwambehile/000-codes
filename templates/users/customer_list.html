@@ -1,0 +1,171 @@
+{% extends "users/base.html" %}
+{% load static %}
+
+{% block content %}
+  {% include "users/sidebar.html" %}
+   <div class="main-panel">
+    <div class="main-header">
+      <div class="main-header-logo">
+        <div class="logo-header" data-background-color="dark">
+         
+          <div class="nav-toggle">
+            <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
+            <button class="btn btn-toggle sidenav-toggler"><i class="gg-menu-left"></i></button>
+          </div>
+          <button class="topbar-toggler more"><i class="gg-more-vertical-alt"></i></button>
+        </div>
+      </div>
+      {% include "users/nav.html" %}
+    </div>
+
+    <div class="container">
+      <div class="page-inner">
+
+        <!-- 🔹 Header -->
+        <div class="mt-4 mb-3">
+          <h3 class="mb-0"><i class="fas fa-database"></i> Customers Database List</h3>
+        </div>
+
+        <!-- 🔹 Search and Actions -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <!-- Search Form -->
+          <form method="get" class="d-flex align-items-center flex-grow-1 gap-2" style="max-width:600px;">
+            <input type="text" name="q" value="{{ query }}"
+                   placeholder="Search by company or designation"
+                   class="form-control flex-grow-1 search-input">
+            <button type="submit" class="btn btn-outline-primary">
+              <i class="fas fa-search"></i> 
+            </button>
+            {% if query %}
+              <a href="{% url 'customers_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> 
+              </a>
+            {% endif %}
+          </form>
+
+          <!-- Action Buttons -->
+          <div class="d-flex gap-2">
+            <a href="{% url 'add_visit' %}" class="btn btn-outline-dark">
+              <i class="fas fa-home"></i> Home
+            </a>
+            <a href="{% url 'add_customer' %}" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Add Customer
+            </a>
+          </div>
+        </div>
+
+        <!-- 🔹 Table -->
+        {% if customers %}
+        <div class="table-responsive">
+          <table class="table align-middle custom-table w-100">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th><i class="fas fa-building"></i> Company Name</th>
+                <th><i class="fas fa-id-badge"></i> Designation</th>
+                <th><i class="fas fa-map-marker-alt"></i> Location</th>
+                <th><i class="fas fa-envelope"></i> Email</th>
+                <th><i class="fas fa-tags"></i> Tag</th>
+                <th><i class="fas fa-cogs"></i> Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for customer in customers %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ customer.company_name|default:"-" }}</td>
+                <td>{{ customer.designation|default:"-" }}</td>
+                <td>{{ customer.location|default:"-" }}</td>
+                <td>{{ customer.email|default:"-" }}</td>
+                <td>
+                  {% if customer.latest_tag %}
+                    <span class="badge 
+                      {% if customer.latest_tag == 'Prospect' %}bg-primary
+                      {% elif customer.latest_tag == 'Lead' %}bg-warning
+                      {% elif customer.latest_tag == 'Customer' %}bg-success
+                      {% endif %}">
+                      {{ customer.latest_tag }}
+                    </span>
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{% url 'view_customer' customer.id %}" class="btn btn-sm btn-outline-info" title="View">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="{% url 'update_customer' customer.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="{% url 'delete_customer' customer.id %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                    <i class="fas fa-trash-alt"></i>
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-center"><i class="fas fa-info-circle"></i> No customers found.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+          <p><i class="fas fa-info-circle"></i> No customers found.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+ 
+
+  <style>
+    .custom-table th,
+    .custom-table td {
+      white-space: nowrap;
+      vertical-align: middle;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      background: transparent !important;
+    }
+
+    .custom-table thead th {
+      font-weight: 600;
+      border-bottom: 2px solid #ccc;
+      background: #f8f9fa !important;
+    }
+
+    .custom-table tbody tr:hover {
+      background-color: #f9f9f9 !important;
+    }
+
+    .btn {
+      font-size: 0.9rem !important;
+      padding: 0.4rem 0.75rem;
+    }
+
+    .search-input {
+      height: calc(2.25rem + 2px);
+      font-size: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .d-flex.justify-content-between {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+      .d-flex.justify-content-between form {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      .d-flex.justify-content-between .d-flex.gap-2 {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+      .d-flex.justify-content-between .d-flex.gap-2 a {
+        flex: 0 0 auto; /* ✅ prevent 100% width on small screens */
+      }
+    }
+  </style>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+{% endblock %}

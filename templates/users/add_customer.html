@@ -1,0 +1,277 @@
+{% extends "users/base.html" %}
+{% load static %}
+
+{% block content %}
+  {% include "users/sidebar.html" %}
+  <div class="main-panel">
+    <div class="main-header">
+      <div class="main-header-logo">
+        <div class="logo-header" data-background-color="dark">
+          <a href="index.html" class="logo">
+            <img src="{% static 'assets/img/kaiadmin/logo_light.svg' %}" alt="navbar brand" class="navbar-brand" height="20" />
+          </a>
+          <div class="nav-toggle">
+            <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
+            <button class="btn btn-toggle sidenav-toggler"><i class="gg-menu-left"></i></button>
+          </div>
+          <button class="topbar-toggler more"><i class="gg-more-vertical-alt"></i></button>
+        </div>
+      </div>
+      {% include "users/nav.html" %}
+    </div>
+
+    
+        
+
+        <!-- Stats -->
+       <div class="container">
+      <div class="page-inner">
+
+        <!-- ✅ Back Link -->
+        <div class="mb-3">
+          <a href="{% url 'customer_list' %}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i> Go Back
+          </a>
+        </div>
+
+        <h3 class="mb-4">
+          <i class="fas fa-user-plus text-primary me-2"></i> Add Customer
+        </h3>
+
+        <!-- ✅ Messages -->
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+              <i class="fas fa-info-circle me-2"></i> {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" class="custom-form">
+          {% csrf_token %}
+
+          <!-- Customer Form -->
+          <div class="mb-4">
+            <h5><i class="fas fa-building text-secondary me-2"></i> Customer Details</h5>
+
+            {% if customer_form.errors %}
+              <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Please correct the errors below.</strong>
+              </div>
+            {% endif %}
+
+            <div class="table-responsive">
+              <table class="table border-0">
+                <tbody>
+                  <tr>
+                    <th><i class="fas fa-user-tie me-1 text-muted"></i> Designation</th>
+                    <td>
+                      {{ customer_form.designation }}
+                      {% if customer_form.designation.errors %}
+                        <div class="text-danger small">{{ customer_form.designation.errors.0 }}</div>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th><i class="fas fa-building me-1 text-muted"></i> Company Name</th>
+                    <td>
+                      {{ customer_form.company_name }}
+                      {% if customer_form.company_name.errors %}
+                        <div class="text-danger small">{{ customer_form.company_name.errors.0 }}</div>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th><i class="fas fa-map-marker-alt me-1 text-muted"></i> Location</th>
+                    <td>
+                      {{ customer_form.location }}
+                      {% if customer_form.location.errors %}
+                        <div class="text-danger small">{{ customer_form.location.errors.0 }}</div>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th><i class="fas fa-envelope me-1 text-muted"></i> Email</th>
+                    <td>
+                      {{ customer_form.email }}
+                      {% if customer_form.email.errors %}
+                        <div class="text-danger small">{{ customer_form.email.errors.0 }}</div>
+                      {% endif %}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Contact Formset -->
+          <div class="mb-4">
+            <h5><i class="fas fa-address-book text-secondary me-2"></i> Contact Details</h5>
+            {{ formset.management_form }}
+
+            <div class="table-responsive">
+              <table id="contact-table" class="table border-0">
+                <thead>
+                  <tr>
+                    <th><i class="fas fa-user me-1 text-muted"></i> Contact Name</th>
+                    <th><i class="fas fa-phone me-1 text-muted"></i> Contact Detail</th>
+                    <th><i class="fas fa-trash-alt me-1 text-muted"></i> Delete?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for form in formset %}
+                    <tr>
+                      {{ form.id }}
+                      <td>
+                        {{ form.contact_name }}
+                        {% if form.contact_name.errors %}
+                          <div class="text-danger small">{{ form.contact_name.errors.0 }}</div>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {{ form.contact_detail }}
+                        {% if form.contact_detail.errors %}
+                          <div class="text-danger small">{{ form.contact_detail.errors.0 }}</div>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {{ form.DELETE }}
+                        <button type="button" class="btn btn-sm btn-danger remove-row">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <button type="button" id="add-contact" class="btn btn-outline-success btn-sm">
+              <i class="fas fa-plus-circle me-1"></i> Add Contact
+            </button>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i> Save Customer
+          </button>
+          <a href="{% url 'customer_list' %}" class="btn btn-secondary">
+            <i class="fas fa-times-circle me-1"></i> Cancel
+          </a>
+        </form>
+      </div>
+    </div>
+
+        
+     
+  </div>
+  
+
+  <!-- ✅ Styles -->
+  <style>
+    .custom-form table,
+    .custom-form td,
+    .custom-form th {
+      background: transparent !important;
+      vertical-align: middle;
+    }
+
+    .custom-form input,
+    .custom-form select,
+    .custom-form textarea {
+      background: transparent !important;
+      border: 1.5px solid #ccc;
+      width: 100%;
+      padding: 10px; /* increased height */
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .custom-form input:focus,
+    .custom-form select:focus,
+    .custom-form textarea:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 3px rgba(0,123,255,0.5);
+    }
+
+    /* ✅ Error text */
+    .text-danger.small {
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+
+    /* ✅ Make fully responsive */
+    @media (max-width: 768px) {
+      .custom-form table,
+      .custom-form tbody,
+      .custom-form tr,
+      .custom-form th,
+      .custom-form td {
+        display: block;
+        width: 100% !important;
+      }
+
+      .custom-form th {
+        font-weight: bold;
+        margin-top: 12px;
+      }
+
+      .custom-form td {
+        margin-bottom: 10px;
+      }
+
+      /* Inputs take full width */
+      .custom-form input,
+      .custom-form select,
+      .custom-form textarea {
+        width: 100% !important;
+        font-size: 15px; /* slightly bigger on small devices */
+      }
+    }
+  </style>
+
+  <!-- ✅ Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <!-- ✅ Dynamic Formset -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const addBtn = document.getElementById("add-contact");
+      const tableBody = document.querySelector("#contact-table tbody");
+      const totalForms = document.querySelector("#id_contacts-TOTAL_FORMS");
+
+      addBtn.addEventListener("click", function () {
+        let formIndex = parseInt(totalForms.value);
+        let newRow = tableBody.querySelector("tr").cloneNode(true);
+
+        newRow.querySelectorAll("input").forEach(function (input) {
+          if (input.type === "checkbox") {
+            input.checked = false;
+          } else {
+            input.value = "";
+          }
+          if (input.name) {
+            input.name = input.name.replace(/contacts-(\d+)-/, `contacts-${formIndex}-`);
+          }
+          if (input.id) {
+            input.id = input.id.replace(/contacts-(\d+)-/, `contacts-${formIndex}-`);
+          }
+        });
+
+        tableBody.appendChild(newRow);
+        totalForms.value = formIndex + 1;
+      });
+
+      tableBody.addEventListener("click", function (e) {
+        if (e.target.closest(".remove-row")) {
+          const row = e.target.closest("tr");
+          const deleteCheckbox = row.querySelector("input[type='checkbox']");
+          if (deleteCheckbox) deleteCheckbox.checked = true;
+          row.style.display = "none";
+        }
+      });
+    });
+  </script>
+{% endblock %}
